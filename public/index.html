@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LangChain Voice & Text Assistant</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-color: #f7f7f7;
+      --container-bg: white;
+      --text-color: #2c3e50;
+      --response-bg: #f9f9f9;
+      --primary-color: #3498db;
+      --primary-hover: #2980b9;
+      --danger-color: #e74c3c;
+      --danger-hover: #c0392b;
+      --success-color: #2ecc71;
+      --border-color: #ddd;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+    [data-theme="dark"] {
+      --bg-color: #1a1a2e;
+      --container-bg: #16213e;
+      --text-color: #e2e2e2;
+      --response-bg: #0f3460;
+      --primary-color: #4361ee;
+      --primary-hover: #3f37c9;
+      --danger-color: #e5383b;
+      --danger-hover: #ba181b;
+      --success-color: #06d6a0;
+      --border-color: #222831;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: all 0.3s ease;
+      line-height: 1.6;
+    }
+    
+    h1, h2, h3, h4 {
+      margin-top: 0;
+      font-weight: 600;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.2rem;
+    }
+    
+    .container {
+      background-color: var(--container-bg);
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 15px var(--shadow-color);
+      transition: all 0.3s ease;
+    }
+    
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .theme-toggle {
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-toggle:hover {
+      background-color: rgba(128, 128, 128, 0.1);
+    }
+    
+    .keyboard-shortcuts {
+      margin-left: auto;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .keyboard-shortcuts-button {
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .keyboard-shortcuts-button:hover {
+      background-color: rgba(128, 128, 128, 0.1);
+    }
+    
+    .shortcuts-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: var(--container-bg);
+      min-width: 250px;
+      box-shadow: 0 8px 16px var(--shadow-color);
+      border-radius: 8px;
+      padding: 15px;
+      z-index: 10;
+    }
+    
+    .shortcuts-content.show {
+      display: block;
+    }
+    
+    .shortcut {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+    }
+    
+    .key {
+      background-color: rgba(128, 128, 128, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      margin-left: 10px;
+    }
+    
+    .input-section {
+      margin-bottom: 25px;
+    }
+    
+    .response-section {
+      margin-top: 30px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 20px;
+    }
+    
+    textarea {
+      width: 100%;
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 16px;
+      resize: vertical;
+      background-color: var(--container-bg);
+      color: var(--text-color);
+      transition: all 0.3s ease;
+      min-height: 100px;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+    
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-right: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    button i {
+      margin-right: 8px;
+    }
+    
+    button:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button:disabled {
+      background-color: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .danger-button {
+      background-color: var(--danger-color);
+    }
+    
+    .danger-button:hover {
+      background-color: var(--danger-hover);
+    }
+    
+    #response {
+      background-color: var(--response-bg);
+      padding: 20px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      min-height: 100px;
+      font-size: 16px;
+      line-height: 1.6;
+      border-left: 4px solid var(--primary-color);
+      margin-bottom: 20px;
+      overflow-wrap: break-word;
+    }
+    
+    .controls {
+      display: flex;
+      margin-top: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .recording {
+      animation: pulse 1.5s infinite;
+      background-color: var(--danger-color) !important;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+    
+    .tabs {
+      display: flex;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .tab {
+      padding: 12px 20px;
+      cursor: pointer;
+      margin-right: 5px;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      position: relative;
+    }
+    
+    .tab:hover {
+      background-color: rgba(128, 128, 128, 0.1);
+    }
+    
+    .tab.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: var(--primary-color);
+      border-radius: 3px 3px 0 0;
+    }
+    
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .audio-player {
+      margin-top: 15px;
+      width: 100%;
+      border-radius: 8px;
+      height: 50px;
+    }
+    
+    .error {
+      color: var(--danger-color);
+      font-weight: 500;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: rgba(231, 76, 60, 0.1);
+      display: none;
+    }
+    
+    .error.show {
+      display: block;
+      animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+    
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+    
+    .timer {
+      margin-left: 10px;
+      font-weight: 600;
+      color: var(--primary-color);
+      min-width: 45px;
+      display: inline-block;
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      margin-top: 15px;
+    }
+    
+    .status-badge {
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 14px;
+      font-weight: 500;
+      background-color: var(--bg-color);
+      margin-right: 10px;
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    .status-badge i {
+      margin-right: 5px;
+    }
+    
+    .test-section, .upload-section {
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .debug-info {
+      font-size: 12px;
+      margin-top: 20px;
+      padding: 10px;
+      background-color: rgba(128, 128, 128, 0.1);
+      border-radius: 5px;
+    }
+    
+    .audio-controls {
+      display: flex;
+      align-items: center;
+      margin-top: 15px;
+      gap: 15px;
+    }
+    
+    .audio-option {
+      display: flex;
+      align-items: center;
+    }
+    
+    .audio-option label {
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    
+    .spinner {
+      display: none;
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(52, 152, 219, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s ease-in-out infinite;
+      margin: 0 auto 15px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    #visualizer {
+      height: 70px;
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 15px;
+      background-color: var(--response-bg);
+      display: none;
+      border: 1px solid var(--border-color);
+    }
+    
+    .file-upload {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .file-upload input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    .file-upload-label {
+      padding: 12px 20px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 500;
+    }
+    
+    .file-upload-label i {
+      margin-right: 8px;
+    }
+    
+    .file-name {
+      margin-left: 10px;
+      font-size: 14px;
+      color: var(--primary-color);
+    }
+    
+    .voice-options {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    
+    select {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: var(--container-bg);
+      color: var(--text-color);
+      font-size: 15px;
+      outline: none;
+      min-width: 150px;
+    }
+    
+    select:focus {
+      border-color: var(--primary-color);
+    }
+    
+    .section-title {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .section-title i {
+      margin-right: 10px;
+      color: var(--primary-color);
+    }
+    
+    .copy-button {
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      padding: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 4px;
+      margin-left: auto;
+    }
+    
+    .copy-button:hover {
+      background-color: rgba(128, 128, 128, 0.1);
+      transform: none;
+    }
+    
+    .copy-button i {
+      margin-right: 0;
+    }
+    
+    .history-container {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      padding: 0;
+    }
+    
+    .history-item {
+      padding: 15px;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .history-item:last-child {
+      border-bottom: none;
+    }
+    
+    .history-item:hover {
+      background-color: rgba(128, 128, 128, 0.1);
+    }
+    
+    .history-item-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: var(--primary-color);
+    }
+    
+    .history-content {
+      font-size: 15px;
+    }
+    
+    .badge {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .badge-text {
+      background-color: #3498db;
+    }
+    
+    .badge-voice {
+      background-color: #9b59b6;
+    }
+    
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background-color: var(--border-color);
+      border-radius: 3px;
+      margin-top: 10px;
+      overflow: hidden;
+      display: none;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background-color: var(--primary-color);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: var(--success-color);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      transform: translateY(20px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .toast i {
+      margin-right: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .container {
+        padding: 15px;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      button {
+        margin-right: 0;
+        margin-bottom: 10px;
+      }
+      
+      .tab {
+        padding: 10px;
+        font-size: 14px;
+      }
+      
+      .voice-options {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header-actions">
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
+      <i class="fas fa-moon"></i>
+    </button>
+    
+    <div class="keyboard-shortcuts">
+      <button class="keyboard-shortcuts-button" id="keyboardShortcuts" aria-label="Keyboard shortcuts">
+        <i class="fas fa-keyboard"></i>
+      </button>
+      <div class="shortcuts-content" id="shortcutsContent">
+        <h3>Keyboard Shortcuts</h3>
+        <div class="shortcut">
+          <span>Send message</span>
+          <span class="key">Ctrl + Enter</span>
+        </div>
+        <div class="shortcut">
+          <span>Start/stop recording</span>
+          <span class="key">Ctrl + R</span>
+        </div>
+        <div class="shortcut">
+          <span>Clear input</span>
+          <span class="key">Escape</span>
+        </div>
+        <div class="shortcut">
+          <span>Toggle dark mode</span>
+          <span class="key">Ctrl + D</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <h1>LangChain Voice & Text Assistant</h1>
+  
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" data-tab="text">
+        <i class="fas fa-keyboard"></i> Text Input
+      </div>
+      <div class="tab" data-tab="voice">
+        <i class="fas fa-microphone"></i> Voice Input
+      </div>
+      <div class="tab" data-tab="test">
+        <i class="fas fa-flask"></i> Audio Test
+      </div>
+    </div>
+    
+    <div class="tab-content active" id="text-tab">
+      <div class="input-section">
+        <div class="section-title">
+          <i class="fas fa-comment-alt"></i>
+          <h3>Enter your question:</h3>
+        </div>
+        <textarea id="textInput" rows="4" placeholder="Type your question here... (Press Ctrl+Enter to send)" aria-label="Text input for query"></textarea>
+        <div class="controls">
+          <button id="sendText" aria-label="Send text query">
+            <i class="fas fa-paper-plane"></i> Send
+          </button>
+          <button id="clearHistory" class="danger-button" aria-label="Clear conversation history">
+            <i class="fas fa-trash-alt"></i> Clear History
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tab-content" id="voice-tab">
+      <div class="input-section">
+        <div class="section-title">
+          <i class="fas fa-microphone"></i>
+          <h3>Record your question:</h3>
+        </div>
+        <div class="voice-options">
+          <div>
+            <label for="voiceSelect">TTS Voice:</label>
+            <select id="voiceSelect" aria-label="Select voice for text-to-speech">
+              <option value="alloy">Alloy (Neutral)</option>
+              <option value="echo">Echo (Male)</option>
+              <option value="fable">Fable (Storytelling)</option>
+              <option value="onyx">Onyx (Authoritative)</option>
+              <option value="nova">Nova (Female)</option>
+              <option value="shimmer">Shimmer (Positive)</option>
+            </select>
+          </div>
+          <div>
+            <label for="languageSelect">Language:</label>
+            <select id="languageSelect" aria-label="Select language for speech recognition">
+              <option value="auto">Auto-detect</option>
+              <option value="en">English</option>
+              <option value="tr">Turkish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="es">Spanish</option>
+              <option value="it">Italian</option>
+              <option value="ja">Japanese</option>
+              <option value="zh">Chinese</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="controls">
+          <button id="startRecording" aria-label="Start voice recording">
+            <i class="fas fa-microphone"></i> Start Recording
+          </button>
+          <button id="stopRecording" disabled aria-label="Stop voice recording">
+            <i class="fas fa-stop"></i> Stop Recording
+          </button>
+          <span id="recordingTimer" class="timer"></span>
+        </div>
+        
+        <div class="status-indicator">
+          <div class="status-badge" id="recordingStatus">
+            <i class="fas fa-circle"></i> Not recording
+          </div>
+        </div>
+        
+        <canvas id="visualizer"></canvas>
+      </div>
+    </div>
+    
+    <div class="tab-content" id="test-tab">
+      <div class="test-section">
+        <div class="section-title">
+          <i class="fas fa-vial"></i>
+          <h3>Test Audio Transcription:</h3>
+        </div>
+        <p>Use this to test if your microphone is working with the OpenAI Whisper API.</p>
+        
+        <div class="controls">
+          <button id="startTestRecording" aria-label="Start test recording">
+            <i class="fas fa-microphone"></i> Start Test Recording
+          </button>
+          <button id="stopTestRecording" disabled aria-label="Stop test recording">
+            <i class="fas fa-stop"></i> Stop Test Recording
+          </button>
+          <span id="testRecordingTimer" class="timer"></span>
+        </div>
+        
+        <div class="status-indicator">
+          <div class="status-badge" id="testStatus">
+            <i class="fas fa-circle"></i> Not recording
+          </div>
+        </div>
+        
+        <div id="testResult" class="response-section" style="display: none;"></div>
+      </div>
+      
+      <div class="upload-section">
+        <div class="section-title">
+          <i class="fas fa-upload"></i>
+          <h3>Or Upload Audio File:</h3>
+        </div>
+        <p>Upload a pre-recorded audio file for testing (MP3, WAV, M4A recommended):</p>
+        
+        <div class="controls">
+          <div class="file-upload">
+            <label class="file-upload-label">
+              <i class="fas fa-file-audio"></i> Choose File
+              <input type="file" id="audioFileUpload" accept="audio/*" aria-label="Upload audio file" />
+            </label>
+            <span class="file-name" id="fileName"></span>
+          </div>
+          <button id="uploadAudioFile" aria-label="Test uploaded audio file">
+            <i class="fas fa-check"></i> Test File
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="response-section">
+      <div class="section-title">
+        <i class="fas fa-history"></i>
+        <h3>Response History:</h3>
+        <button id="clearHistoryTop" class="danger-button" aria-label="Clear conversation history" style="margin-left: auto; padding: 8px;">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </div>
+      <div class="history-container" id="historyContainer">
+        <!-- History items will be added here -->
+      </div>
+      
+      <div class="section-title">
+        <i class="fas fa-comment-dots"></i>
+        <h3>Current Response:</h3>
+        <button id="copyResponse" class="copy-button" aria-label="Copy response to clipboard">
+          <i class="fas fa-copy"></i>
+        </button>
+      </div>
+      
+      <div id="responseContainer">
+        <div class="spinner" id="loadingSpinner"></div>
+        <div class="progress-container" id="progressContainer">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <p id="transcription"></p>
+        <div id="response">Your response will appear here...</div>
+        <div id="audioResponse"></div>
+        <div class="audio-controls">
+          <div class="audio-option">
+            <input type="checkbox" id="autoPlayToggle" checked aria-label="Toggle auto-play">
+            <label for="autoPlayToggle">Auto-play response</label>
+          </div>
+          <button id="stopSpeech" class="danger-button" style="display: none;" aria-label="Stop audio playback">
+            <i class="fas fa-volume-mute"></i> Stop Speaking
+          </button>
+        </div>
+        <div id="errorDetails" class="error"></div>
+      </div>
+    </div>
+    
+    <div class="debug-info">
+      <div><strong>Device:</strong> <span id="deviceInfo">Loading...</span></div>
+      <div><strong>Audio Format:</strong> <span id="audioFormat">Not recorded yet</span></div>
+      <div><strong>Audio Size:</strong> <span id="audioSize">0 bytes</span></div>
+      <div><strong>Connection:</strong> <span id="connectionStatus">Checking...</span></div>
+    </div>
+  </div>
+  
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage"></span>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    let mediaRecorder;
+    let testMediaRecorder;
+    let audioChunks = [];
+    let testAudioChunks = [];
+    let isRecording = false;
+    let isTestRecording = false;
+    let recordingStartTime;
+    let testRecordingStartTime;
+    let recordingTimer;
+    let testRecordingTimer;
+    let currentAudioPlayer = null;
+    let socket;
+    let visualizerAnimationFrame;
+    let audioContext;
+    let analyser;
+
+    function loadPreferences() {
+      const theme = localStorage.getItem('theme') || '';
+      document.documentElement.dataset.theme = theme;
+      document.getElementById('themeToggle').innerHTML = 
+        theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+      
+      const voice = localStorage.getItem('voice') || 'alloy';
+      document.getElementById('voiceSelect').value = voice;
+      
+      const language = localStorage.getItem('language') || 'auto';
+      document.getElementById('languageSelect').value = language;
+      
+      const autoPlay = localStorage.getItem('autoPlay');
+      document.getElementById('autoPlayToggle').checked = autoPlay === 'false' ? false : true;
+    }
+
+    function savePreference(key, value) {
+      localStorage.setItem(key, value);
+    }
+
+    function connectSocket() {
+      socket = io();
+      
+      socket.on('connect', () => {
+        console.log('Connected to server with ID:', socket.id);
+        document.getElementById('connectionStatus').textContent = 'Connected';
+        document.getElementById('connectionStatus').style.color = 'var(--success-color)';
+      });
+      
+      socket.on('speech-progress', (data) => {
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        
+        progressContainer.style.display = 'block';
+        
+        switch(data.status) {
+          case 'transcribing':
+            progressBar.style.width = '30%';
+            document.getElementById('response').textContent = 'Processing: Transcribing your audio...';
+            break;
+          case 'generating response':
+            progressBar.style.width = '60%';
+            document.getElementById('response').textContent = 'Processing: Generating response...';
+            break;
+          case 'generating speech':
+            progressBar.style.width = '90%';
+            document.getElementById('response').textContent = 'Processing: Creating audio response...';
+            break;
+        }
+      });
+      
+      socket.on('speech-ready', (data) => {
+        console.log('Speech ready:', data);
+        document.getElementById('progressContainer').style.display = 'none';
+        document.getElementById('progressBar').style.width = '100%';
+      });
+      
+      socket.on('speech-stopped', () => {
+        if (currentAudioPlayer) {
+          currentAudioPlayer.pause();
+          document.getElementById('stopSpeech').style.display = 'none';
+        }
+      });
+      
+      socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+        document.getElementById('connectionStatus').textContent = 'Disconnected';
+        document.getElementById('connectionStatus').style.color = 'var(--danger-color)';
+      });
+    }
+    
+    function getDeviceInfo() {
+      const deviceInfo = document.getElementById('deviceInfo');
+      const userAgent = navigator.userAgent;
+      let deviceType = 'Unknown';
+      
+      if (/Android/i.test(userAgent)) {
+        deviceType = 'Android';
+      } else if (/iPhone|iPad|iPod/i.test(userAgent)) {
+        deviceType = 'iOS';
+      } else if (/Windows/i.test(userAgent)) {
+        deviceType = 'Windows';
+      } else if (/Mac/i.test(userAgent)) {
+        deviceType = 'Mac';
+      } else if (/Linux/i.test(userAgent)) {
+        deviceType = 'Linux';
+      }
+      
+      const browser = /Edge/i.test(userAgent) ? 'Edge' : 
+                     /Firefox/i.test(userAgent) ? 'Firefox' : 
+                     /Chrome/i.test(userAgent) ? 'Chrome' : 
+                     /Safari/i.test(userAgent) ? 'Safari' : 'Unknown';
+      
+      deviceInfo.textContent = `${deviceType} - ${browser}`;
+    }
+    
+    function getSupportedMimeType() {
+      const types = [
+        'audio/mp3',
+        'audio/wav',
+        'audio/mpeg',
+        'audio/webm',
+        'audio/ogg'
+      ];
+      
+      for (let type of types) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          console.log('Supported MIME type:', type);
+          return type;
+        }
+      }
+      
+      console.log('No preferred MIME types supported, using default');
+      return '';
+    }
+    
+    function setupVisualizer(stream) {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
+      if (visualizerAnimationFrame) {
+        cancelAnimationFrame(visualizerAnimationFrame);
+      }
+      
+      const source = audioContext.createMediaStreamSource(stream);
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+      source.connect(analyser);
+      
+      const canvas = document.getElementById('visualizer');
+      canvas.style.display = 'block';
+      const canvasCtx = canvas.getContext('2d');
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      function draw() {
+        visualizerAnimationFrame = requestAnimationFrame(draw);
+        
+        analyser.getByteTimeDomainData(dataArray);
+        
+        canvasCtx.fillStyle = 'var(--response-bg)';
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = 'var(--primary-color)';
+        canvasCtx.beginPath();
+        
+        const sliceWidth = canvas.width / bufferLength;
+        let x = 0;
+        
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = v * canvas.height / 2;
+          
+          if (i === 0) {
+            canvasCtx.moveTo(x, y);
+          } else {
+            canvasCtx.lineTo(x, y);
+          }
+          
+          x += sliceWidth;
+        }
+        
+        canvasCtx.lineTo(canvas.width, canvas.height / 2);
+        canvasCtx.stroke();
+      }
+      
+      draw();
+    }
+    
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      
+      toastMessage.textContent = message;
+      
+      toast.style.backgroundColor = type === 'success' ? 'var(--success-color)' : 'var(--danger-color)';
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+    
+    function updateHistory(transcription, response, type = 'text') {
+      const history = JSON.parse(localStorage.getItem('responseHistory') || '[]');
+      
+      history.unshift({
+        transcription,
+        response,
+        type,
+        timestamp: new Date().toLocaleString()
+      });
+      
+      const limitedHistory = history.slice(0, 10);
+      
+      localStorage.setItem('responseHistory', JSON.stringify(limitedHistory));
+      
+      renderHistory();
+    }
+    
+    function renderHistory() {
+      const historyContainer = document.getElementById('historyContainer');
+      const history = JSON.parse(localStorage.getItem('responseHistory') || '[]');
+      
+      if (history.length === 0) {
+        historyContainer.innerHTML = '<p style="text-align: center; padding: 20px;">No conversation history yet.</p>';
+        return;
+      }
+      
+      historyContainer.innerHTML = history.map((item, index) => `
+        <div class="history-item" data-index="${index}">
+          <div class="history-item-header">
+            <span>${item.timestamp || 'Unknown time'}</span>
+            <span class="badge badge-${item.type || 'text'}">${(item.type || 'text').toUpperCase()}</span>
+          </div>
+          <div class="history-content">
+            ${item.transcription ? `<strong>You:</strong> ${item.transcription.substring(0, 100)}${item.transcription.length > 100 ? '...' : ''}<br>` : ''}
+            <strong>AI:</strong> ${item.response ? item.response.substring(0, 100) + (item.response.length > 100 ? '...' : '') : 'No response'}
+          </div>
+        </div>
+      `).join('');
+      
+      document.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const index = item.dataset.index;
+          const historyItem = history[index];
+          
+          document.getElementById('response').textContent = historyItem.response || '';
+          
+          if (historyItem.transcription) {
+            document.getElementById('transcription').textContent = `You said: "${historyItem.transcription}"`;
+          } else {
+            document.getElementById('transcription').textContent = '';
+          }
+        });
+      });
+    }
+    
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(
+        () => showToast('Copied to clipboard!'),
+        () => showToast('Failed to copy text.', 'error')
+      );
+    }
+    
+    function showError(message) {
+      const errorDetails = document.getElementById('errorDetails');
+      errorDetails.textContent = message;
+      errorDetails.classList.add('show');
+      
+      setTimeout(() => {
+        errorDetails.classList.remove('show');
+      }, 5000);
+    }
+
+    function clearHistory() {
+      fetch('/api/clear-memory', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            localStorage.removeItem('responseHistory');
+            document.getElementById('historyContainer').innerHTML = '<p style="text-align: center; padding: 20px;">No conversation history yet.</p>';
+            document.getElementById('response').textContent = 'History cleared. Start a new conversation!';
+            document.getElementById('transcription').textContent = '';
+            document.getElementById('audioResponse').innerHTML = '';
+            showToast('Conversation history cleared');
+          } else {
+            showError('Failed to clear server memory');
+          }
+        })
+        .catch(error => {
+          showError('Failed to clear conversation history: ' + error.message);
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      loadPreferences();
+      connectSocket();
+      getDeviceInfo();
+      renderHistory();
+      
+      const visualizer = document.getElementById('visualizer');
+      visualizer.width = visualizer.offsetWidth;
+      visualizer.height = 70;
+      
+      const tabs = document.querySelectorAll('.tab');
+      console.log('Found tabs:', tabs.length);
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          console.log('Tab clicked:', this.dataset.tab);
+          
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          
+          this.classList.add('active');
+          
+          const contentId = this.dataset.tab + '-tab';
+          const contentElement = document.getElementById(contentId);
+          
+          console.log('Activating content:', contentId, contentElement);
+          
+          if (contentElement) {
+            contentElement.classList.add('active');
+          } else {
+            console.error('Tab content not found:', contentId);
+          }
+        });
+      });
+      
+      document.getElementById('themeToggle').addEventListener('click', () => {
+        const currentTheme = document.documentElement.dataset.theme;
+        const newTheme = currentTheme === 'dark' ? '' : 'dark';
+        
+        document.documentElement.dataset.theme = newTheme;
+        document.getElementById('themeToggle').innerHTML = 
+          newTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        
+        savePreference('theme', newTheme);
+      });
+      
+      document.getElementById('keyboardShortcuts').addEventListener('click', () => {
+        document.getElementById('shortcutsContent').classList.toggle('show');
+      });
+      
+      document.addEventListener('click', (event) => {
+        const shortcutsBtn = document.getElementById('keyboardShortcuts');
+        const shortcutsContent = document.getElementById('shortcutsContent');
+        
+        if (!shortcutsBtn.contains(event.target) && !shortcutsContent.contains(event.target)) {
+          shortcutsContent.classList.remove('show');
+        }
+      });
+      
+      document.getElementById('voiceSelect').addEventListener('change', (e) => {
+        savePreference('voice', e.target.value);
+      });
+      
+      document.getElementById('languageSelect').addEventListener('change', (e) => {
+        savePreference('language', e.target.value);
+      });
+      
+      document.getElementById('autoPlayToggle').addEventListener('change', (e) => {
+        savePreference('autoPlay', e.target.checked);
+      });
+      
+      document.getElementById('audioFileUpload').addEventListener('change', (e) => {
+        const fileName = e.target.files[0]?.name || 'No file selected';
+        document.getElementById('fileName').textContent = fileName;
+      });
+      
+      document.getElementById('copyResponse').addEventListener('click', () => {
+        const response = document.getElementById('response').textContent;
+        if (response && response !== 'Your response will appear here...') {
+          copyToClipboard(response);
+        }
+      });
+      
+      document.getElementById('stopSpeech').addEventListener('click', () => {
+        if (currentAudioPlayer) {
+          currentAudioPlayer.pause();
+          currentAudioPlayer.currentTime = 0;
+          document.getElementById('stopSpeech').style.display = 'none';
+        }
+        
+        if (socket && socket.connected) {
+          socket.emit('stop-speech');
+        }
+      });
+      
+      const textInputEl = document.getElementById('textInput');
+      textInputEl.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+          document.getElementById('sendText').click();
+          e.preventDefault();
+        } else if (e.key === 'Escape') {
+          textInputEl.value = '';
+        }
+      });
+      
+      document.getElementById('sendText').addEventListener('click', async () => {
+        const textInput = textInputEl.value.trim();
+        if (!textInput) return;
+        
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        loadingSpinner.style.display = 'block';
+        document.getElementById('progressContainer').style.display = 'block';
+        document.getElementById('progressBar').style.width = '50%';
+        document.getElementById('response').textContent = 'Processing...';
+        document.getElementById('transcription').textContent = '';
+        document.getElementById('audioResponse').innerHTML = '';
+        document.getElementById('errorDetails').textContent = '';
+        document.getElementById('errorDetails').classList.remove('show');
+        
+        try {
+          const response = await fetch('/api/text-query', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: textInput }),
+          });
+          
+          const data = await response.json();
+          
+          if (data.error) {
+            document.getElementById('response').textContent = 'Error occurred';
+            showError(data.details || data.error);
+          } else {
+            document.getElementById('response').textContent = data.response;
+            updateHistory(null, data.response, 'text');
+            textInputEl.value = '';
+            showToast('Response received!');
+          }
+        } catch (error) {
+          document.getElementById('response').textContent = 'Error: Failed to get response';
+          showError(error.message);
+        } finally {
+          loadingSpinner.style.display = 'none';
+          document.getElementById('progressContainer').style.display = 'none';
+        }
+      });
+      
+      document.getElementById('clearHistory').addEventListener('click', clearHistory);
+      document.getElementById('clearHistoryTop').addEventListener('click', clearHistory);
+      
+      document.getElementById('startRecording').addEventListener('click', async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            } 
+          });
+          
+          setupVisualizer(stream);
+          
+          const options = { mimeType: getSupportedMimeType() };
+          mediaRecorder = new MediaRecorder(stream, options);
+          audioChunks = [];
+          let transcriptionBuffer = '';
+          
+          mediaRecorder.addEventListener('dataavailable', async (event) => {
+            if (event.data.size > 0) {
+              audioChunks.push(event.data);
+              const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+              const formData = new FormData();
+              formData.append('audio', blob, `chunk-${Date.now()}.mp3`);
+              formData.append('language', document.getElementById('languageSelect').value);
+              try {
+                const response = await fetch('/api/test-transcription', {
+                  method: 'POST',
+                  body: formData,
+                });
+                const data = await response.json();
+                if (data.transcription) {
+                  transcriptionBuffer += ' ' + data.transcription;
+                  document.getElementById('transcription').textContent = `Live: "${transcriptionBuffer.trim()}"`;
+                }
+              } catch (error) {
+                console.error('Real-time transcription error:', error);
+              }
+            }
+          });
+          
+          mediaRecorder.addEventListener('stop', async () => {
+            clearInterval(recordingTimer);
+            document.getElementById('recordingTimer').textContent = '';
+            document.getElementById('visualizer').style.display = 'none';
+            
+            if (visualizerAnimationFrame) {
+              cancelAnimationFrame(visualizerAnimationFrame);
+              visualizerAnimationFrame = null;
+            }
+            
+            const recordingDuration = Date.now() - recordingStartTime;
+            if (recordingDuration < 1000) {
+              document.getElementById('recordingStatus').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Recording too short!';
+              showError('Recording must be at least 1 second long');
+              stream.getTracks().forEach(track => track.stop());
+              return;
+            }
+            
+            const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+            const fileName = `recording-${Date.now()}.mp3`;
+            const file = new File([audioBlob], fileName, { type: 'audio/mp3' });
+            
+            document.getElementById('audioFormat').textContent = audioBlob.type;
+            document.getElementById('audioSize').textContent = `${Math.round(audioBlob.size / 1024)} KB`;
+            
+            // Final transcription before response
+            const formData = new FormData();
+            formData.append('audio', file);
+            formData.append('language', document.getElementById('languageSelect').value);
+            const transcriptionResponse = await fetch('/api/test-transcription', {
+              method: 'POST',
+              body: formData,
+            });
+            const transcriptionData = await transcriptionResponse.json();
+            if (transcriptionData.transcription) {
+              document.getElementById('transcription').textContent = `You said: "${transcriptionData.transcription}"`;
+              await sendAudioToServer(file, transcriptionData.transcription);
+            } else {
+              showError('Failed to transcribe audio');
+            }
+            
+            stream.getTracks().forEach(track => track.stop());
+          });
+          
+          mediaRecorder.start(2000);
+          isRecording = true;
+          recordingStartTime = Date.now();
+          
+          let seconds = 0;
+          recordingTimer = setInterval(() => {
+            seconds++;
+            document.getElementById('recordingTimer').textContent = `${seconds}s`;
+          }, 1000);
+          
+          document.getElementById('recordingStatus').innerHTML = '<i class="fas fa-circle" style="color: var(--danger-color);"></i> Recording...';
+          document.getElementById('startRecording').disabled = true;
+          document.getElementById('startRecording').classList.add('recording');
+          document.getElementById('stopRecording').disabled = false;
+        } catch (error) {
+          document.getElementById('recordingStatus').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Microphone error';
+          showError('Could not access your microphone. Please check your device permissions.');
+        }
+      });
+      
+      document.getElementById('stopRecording').addEventListener('click', () => {
+        if (mediaRecorder && isRecording) {
+          mediaRecorder.stop();
+          isRecording = false;
+          document.getElementById('recordingStatus').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+          document.getElementById('startRecording').disabled = false;
+          document.getElementById('startRecording').classList.remove('recording');
+          document.getElementById('stopRecording').disabled = true;
+        }
+      });
+      
+      document.getElementById('startTestRecording').addEventListener('click', async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            } 
+          });
+          
+          const options = { mimeType: getSupportedMimeType() };
+          testMediaRecorder = new MediaRecorder(stream, options);
+          testAudioChunks = [];
+          
+          testMediaRecorder.addEventListener('dataavailable', event => {
+            if (event.data.size > 0) {
+              testAudioChunks.push(event.data);
+            }
+          });
+          
+          testMediaRecorder.addEventListener('stop', async () => {
+            clearInterval(testRecordingTimer);
+            document.getElementById('testRecordingTimer').textContent = '';
+            
+            const recordingDuration = Date.now() - testRecordingStartTime;
+            if (recordingDuration < 1000) {
+              document.getElementById('testStatus').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Recording too short!';
+              showError('Test recording must be at least 1 second long');
+              stream.getTracks().forEach(track => track.stop());
+              return;
+            }
+            
+            const audioBlob = new Blob(testAudioChunks, { type: testMediaRecorder.mimeType || 'audio/webm' });
+            const fileName = `test-recording-${Date.now()}.mp3`;
+            const file = new File([audioBlob], fileName, { type: 'audio/mp3' });
+            
+            document.getElementById('audioFormat').textContent = audioBlob.type;
+            document.getElementById('audioSize').textContent = `${Math.round(audioBlob.size / 1024)} KB`;
+            
+            await testAudioTranscription(file);
+            stream.getTracks().forEach(track => track.stop());
+          });
+          
+          testMediaRecorder.start(100);
+          isTestRecording = true;
+          testRecordingStartTime = Date.now();
+          
+          let seconds = 0;
+          testRecordingTimer = setInterval(() => {
+            seconds++;
+            document.getElementById('testRecordingTimer').textContent = `${seconds}s`;
+          }, 1000);
+          
+          document.getElementById('testStatus').innerHTML = '<i class="fas fa-circle" style="color: var(--danger-color);"></i> Recording test audio...';
+          document.getElementById('startTestRecording').disabled = true;
+          document.getElementById('startTestRecording').classList.add('recording');
+          document.getElementById('stopTestRecording').disabled = false;
+          
+          document.getElementById('testResult').style.display = 'none';
+        } catch (error) {
+          document.getElementById('testStatus').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Microphone error';
+          showError('Could not access your microphone. Please check your device permissions.');
+        }
+      });
+      
+      document.getElementById('stopTestRecording').addEventListener('click', () => {
+        if (testMediaRecorder && isTestRecording) {
+          testMediaRecorder.stop();
+          isTestRecording = false;
+          document.getElementById('testStatus').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing test...';
+          document.getElementById('startTestRecording').disabled = false;
+          document.getElementById('startTestRecording').classList.remove('recording');
+          document.getElementById('stopTestRecording').disabled = true;
+        }
+      });
+      
+      document.getElementById('uploadAudioFile').addEventListener('click', async () => {
+        const fileInput = document.getElementById('audioFileUpload');
+        if (!fileInput.files || fileInput.files.length === 0) {
+          showError('Please select a file first');
+          return;
+        }
+        
+        const audioFile = fileInput.files[0];
+        document.getElementById('audioFormat').textContent = audioFile.type;
+        document.getElementById('audioSize').textContent = `${Math.round(audioFile.size / 1024)} KB`;
+        
+        document.getElementById('testStatus').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing uploaded file...';
+        
+        document.getElementById('testResult').style.display = 'none';
+        
+        await testAudioTranscription(audioFile);
+      });
+      
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+          const activeTab = document.querySelector('.tab.active').dataset.tab;
+          if (activeTab === 'text') {
+            document.getElementById('sendText').click();
+          }
+        }
+        
+        if (e.ctrlKey && e.key === 'r') {
+          e.preventDefault();
+          const activeTab = document.querySelector('.tab.active').dataset.tab;
+          if (activeTab === 'voice') {
+            if (isRecording) {
+              document.getElementById('stopRecording').click();
+            } else {
+              document.getElementById('startRecording').click();
+            }
+          } else if (activeTab === 'test') {
+            if (isTestRecording) {
+              document.getElementById('stopTestRecording').click();
+            } else {
+              document.getElementById('startTestRecording').click();
+            }
+          }
+        }
+        
+        if (e.ctrlKey && e.key === 'd') {
+          e.preventDefault();
+          document.getElementById('themeToggle').click();
+        }
+      });
+      
+      async function testAudioTranscription(audioBlob) {
+        try {
+          document.getElementById('loadingSpinner').style.display = 'block';
+          
+          const formData = new FormData();
+          formData.append('audio', audioBlob);
+          formData.append('language', document.getElementById('languageSelect').value);
+          
+          const response = await fetch('/api/test-transcription', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          const data = await response.json();
+          
+          const testResult = document.getElementById('testResult');
+          testResult.style.display = 'block';
+          
+          if (data.error) {
+            document.getElementById('testStatus').innerHTML = '<i class="fas fa-times-circle" style="color: var(--danger-color);"></i> Transcription test failed';
+            testResult.innerHTML = `<div class="error show">Error: ${data.details || data.error}</div>`;
+          } else {
+            document.getElementById('testStatus').innerHTML = '<i class="fas fa-check-circle" style="color: var(--success-color);"></i> Transcription successful';
+            testResult.innerHTML = `
+              <div style="background-color: var(--response-bg); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                <strong>Transcription:</strong> "${data.transcription}"
+              </div>
+            `;
+            showToast('Audio test successful!');
+          }
+        } catch (error) {
+          document.getElementById('testStatus').innerHTML = '<i class="fas fa-times-circle" style="color: var(--danger-color);"></i> Transcription test failed';
+          const testResult = document.getElementById('testResult');
+          testResult.style.display = 'block';
+          testResult.innerHTML = `<div class="error show">Error: ${error.message}</div>`;
+        } finally {
+          document.getElementById('loadingSpinner').style.display = 'none';
+        }
+      }
+      
+      async function sendAudioToServer(audioBlob, finalTranscription) {
+        try {
+          document.getElementById('loadingSpinner').style.display = 'block';
+          document.getElementById('progressContainer').style.display = 'block';
+          document.getElementById('progressBar').style.width = '10%';
+          
+          document.getElementById('response').textContent = 'Processing your audio...';
+          document.getElementById('transcription').textContent = `You said: "${finalTranscription}"`;
+          document.getElementById('audioResponse').innerHTML = '';
+          document.getElementById('errorDetails').textContent = '';
+          document.getElementById('errorDetails').classList.remove('show');
+          document.getElementById('stopSpeech').style.display = 'none';
+          
+          const formData = new FormData();
+          formData.append('audio', audioBlob);
+          formData.append('voice', document.getElementById('voiceSelect').value);
+          formData.append('language', document.getElementById('languageSelect').value);
+          
+          const response = await fetch('/api/voice-query', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          const data = await response.json();
+          
+          if (data.error) {
+            document.getElementById('recordingStatus').innerHTML = '<i class="fas fa-circle"></i> Not recording';
+            document.getElementById('response').textContent = 'Error occurred';
+            showError(data.details || data.error);
+          } else {
+            document.getElementById('response').textContent = data.response;
+            document.getElementById('recordingStatus').innerHTML = '<i class="fas fa-circle"></i> Not recording';
+            
+            if (data.audioUrl) {
+              const audioPlayer = document.createElement('audio');
+              audioPlayer.controls = true;
+              audioPlayer.src = data.audioUrl;
+              audioPlayer.className = 'audio-player';
+              
+              currentAudioPlayer = audioPlayer;
+              
+              audioPlayer.addEventListener('play', () => {
+                document.getElementById('stopSpeech').style.display = 'inline-flex';
+              });
+              
+              audioPlayer.addEventListener('ended', () => {
+                document.getElementById('stopSpeech').style.display = 'none';
+              });
+              
+              audioPlayer.addEventListener('pause', () => {
+                document.getElementById('stopSpeech').style.display = 'none';
+              });
+              
+              document.getElementById('audioResponse').innerHTML = '';
+              document.getElementById('audioResponse').appendChild(audioPlayer);
+              
+              const autoPlay = document.getElementById('autoPlayToggle').checked;
+              if (autoPlay) {
+                try {
+                  await audioPlayer.play();
+                } catch (playError) {
+                  console.error('Could not auto-play audio:', playError);
+                  showToast('Auto-play was blocked by your browser. Click play to listen.', 'error');
+                }
+              }
+            }
+            
+            updateHistory(finalTranscription, data.response, 'voice');
+            
+            showToast('Response ready!');
+          }
+        } catch (error) {
+          document.getElementById('response').textContent = 'Error: Failed to process audio';
+          document.getElementById('recordingStatus').innerHTML = '<i class="fas fa-circle"></i> Not recording';
+          showError(error.message);
+        } finally {
+          document.getElementById('loadingSpinner').style.display = 'none';
+          document.getElementById('progressContainer').style.display = 'none';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
