@@ -2,7 +2,7 @@
 
 An advanced voice and text-based assistant using LangChain.js v3 and OpenAI models. This application provides a seamless conversational experience with both text and voice input/output capabilities.
 
-![LangChain Voice Assistant Screenshot](https://raw.githubusercontent.com/yourusername/langchain-voice-assistant/main/screenshot.png)
+![LangChain Voice Assistant Screenshot](./ss.png)
 
 ## Features
 
